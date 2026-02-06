@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { toast } from 'sonner'
 import type { Availability, AccommodationStatus, PaymentType } from '@/types/database'
 
@@ -179,11 +180,11 @@ export function AvailabilityCalendar({ availabilities, onUpdate }: Props) {
                 onClick={() => handleDayClick(day)}
                 disabled={isPast || !inMonth}
                 className={`
-                  h-9 text-xs rounded-md transition-colors
+                  h-9 text-xs rounded-md transition-all duration-150
                   ${!inMonth ? 'invisible' : ''}
-                  ${isPast ? 'text-muted-foreground/40 cursor-not-allowed' : 'hover:bg-muted cursor-pointer'}
+                  ${isPast ? 'text-muted-foreground/40 cursor-not-allowed' : 'hover:bg-muted hover:scale-105 cursor-pointer'}
                   ${available ? 'bg-emerald-100 text-emerald-800 font-medium' : ''}
-                  ${selected ? 'bg-primary text-primary-foreground font-medium' : ''}
+                  ${selected ? 'bg-primary text-primary-foreground font-medium ring-2 ring-primary/30' : ''}
                 `}
               >
                 {format(day, 'd')}
@@ -205,14 +206,14 @@ export function AvailabilityCalendar({ availabilities, onUpdate }: Props) {
           size="sm"
           onClick={() => setCurrentMonth(addMonths(currentMonth, -1))}
         >
-          &larr; Prev
+          <ChevronLeft className="w-4 h-4" />
         </Button>
         <Button
           variant="ghost"
           size="sm"
           onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
         >
-          Next &rarr;
+          <ChevronRight className="w-4 h-4" />
         </Button>
       </div>
 
@@ -222,7 +223,7 @@ export function AvailabilityCalendar({ availabilities, onUpdate }: Props) {
 
       {/* Selection panel */}
       {selecting?.start && (
-        <div className="border rounded-lg p-4 space-y-4 bg-muted/30">
+        <div className="bg-accent/40 border border-primary/20 rounded-xl p-4 space-y-4">
           <p className="text-sm">
             <span className="font-medium">Selected: </span>
             {format(selecting.start, 'MMM d, yyyy')}
@@ -364,7 +365,7 @@ export function AvailabilityCalendar({ availabilities, onUpdate }: Props) {
           {availabilities.map((a) => (
             <div
               key={a.id}
-              className="flex items-start justify-between border rounded-md px-3 py-2 text-sm"
+              className="flex items-start justify-between border border-l-4 border-l-emerald-400 rounded-md px-3 py-2 text-sm"
             >
               <div className="space-y-0.5">
                 <span className="font-medium">

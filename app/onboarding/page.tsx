@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { AvatarUpload } from '@/components/AvatarUpload'
 import { AccommodationPhotosUpload } from '@/components/AccommodationPhotosUpload'
 import type { AccommodationPhoto } from '@/types/database'
@@ -58,6 +59,7 @@ export default function OnboardingPage() {
   const {
     register,
     handleSubmit,
+    setValue,
     setError: setFieldError,
     formState: { errors },
   } = useForm<OnboardingForm>({
@@ -237,18 +239,17 @@ export default function OnboardingPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="country">Country</Label>
-                <select
-                  id="country"
-                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                  {...register('country')}
-                  defaultValue=""
-                >
-                  <option value="" disabled>Select...</option>
-                  {COUNTRIES.map((c) => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
-                </select>
+                <Label>Country</Label>
+                <Select onValueChange={(value) => setValue('country', value, { shouldValidate: true })}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {COUNTRIES.map((c) => (
+                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 {errors.country && (
                   <p className="text-sm text-destructive">{errors.country.message}</p>
                 )}

@@ -19,6 +19,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { Calendar, Clock, CheckCircle, Plane, Camera } from 'lucide-react'
 import type { Profile, Availability, AccommodationPhoto } from '@/types/database'
 
 interface DashboardClientProps {
@@ -61,10 +62,10 @@ export default function DashboardClient({
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <code className="text-sm bg-muted px-3 py-1.5 rounded-md truncate max-w-[250px]">
+            <code className="text-sm bg-muted px-3 py-1.5 rounded-full truncate max-w-[250px]">
               {publicUrl}
             </code>
-            <Button variant="outline" size="sm" onClick={copyLink}>
+            <Button variant="outline" size="sm" className="rounded-full" onClick={copyLink}>
               Copy
             </Button>
           </div>
@@ -72,28 +73,48 @@ export default function DashboardClient({
 
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <Card>
+          <Card className="hover:shadow-md transition-shadow duration-200">
             <CardContent className="pt-4 pb-3 px-4">
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
+                  <Calendar className="w-4 h-4 text-emerald-600" />
+                </div>
+              </div>
               <p className="text-2xl font-bold">{availabilities.length}</p>
               <p className="text-xs text-muted-foreground">Available periods</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="hover:shadow-md transition-shadow duration-200">
             <CardContent className="pt-4 pb-3 px-4">
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center">
+                  <Clock className="w-4 h-4 text-amber-600" />
+                </div>
+              </div>
               <p className="text-2xl font-bold">{pendingHostBookings.length}</p>
               <p className="text-xs text-muted-foreground">Pending requests</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="hover:shadow-md transition-shadow duration-200">
             <CardContent className="pt-4 pb-3 px-4">
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
+                  <CheckCircle className="w-4 h-4 text-blue-600" />
+                </div>
+              </div>
               <p className="text-2xl font-bold">
                 {hostBookings.filter((b) => b.status === 'accepted').length}
               </p>
               <p className="text-xs text-muted-foreground">Accepted visits</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="hover:shadow-md transition-shadow duration-200">
             <CardContent className="pt-4 pb-3 px-4">
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center">
+                  <Plane className="w-4 h-4 text-violet-600" />
+                </div>
+              </div>
               <p className="text-2xl font-bold">
                 {guestBookings.filter((b) => b.status === 'accepted').length}
               </p>
@@ -159,9 +180,12 @@ export default function DashboardClient({
           )}
           {photos.length === 0 && (
             <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Add photos to make your profile more trustworthy for friends.
-              </p>
+              <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+                  <Camera className="w-5 h-5 text-muted-foreground" />
+                </div>
+                <p>Add photos to make your profile more trustworthy for friends.</p>
+              </div>
             </CardContent>
           )}
         </Card>

@@ -50,23 +50,23 @@
 :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --foreground: oklch(0.18 0.015 50);
+  --card: oklch(0.995 0.003 80);
+  --card-foreground: oklch(0.18 0.015 50);
+  --popover: oklch(0.995 0.003 80);
+  --popover-foreground: oklch(0.18 0.015 50);
+  --primary: oklch(0.588 0.16 17);
+  --primary-foreground: oklch(0.985 0.005 17);
+  --secondary: oklch(0.965 0.008 80);
+  --secondary-foreground: oklch(0.18 0.015 50);
+  --muted: oklch(0.955 0.01 80);
+  --muted-foreground: oklch(0.52 0.02 50);
+  --accent: oklch(0.94 0.025 80);
+  --accent-foreground: oklch(0.18 0.015 50);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --border: oklch(0.915 0.01 80);
+  --input: oklch(0.915 0.01 80);
+  --ring: oklch(0.588 0.16 17);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -123,4 +123,14 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.text-gradient-warm {
+  background: linear-gradient(135deg, oklch(0.588 0.16 17), oklch(0.65 0.2 45));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+button, a, input, select, textarea {
+  transition: all 150ms ease;
 }

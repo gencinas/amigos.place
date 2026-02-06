@@ -28,6 +28,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { ChevronLeft, ChevronRight, MapPin } from 'lucide-react'
 import { toast } from 'sonner'
 import type { Profile, Availability, AccommodationPhoto } from '@/types/database'
 
@@ -214,12 +215,12 @@ export default function PublicProfileClient({
                 onClick={() => handleDayClick(day)}
                 disabled={isPast || !inMonth || !available}
                 className={`
-                  h-9 text-xs rounded-md transition-colors
+                  h-9 text-xs rounded-md transition-all duration-150
                   ${!inMonth ? 'invisible' : ''}
                   ${isPast ? 'text-muted-foreground/40' : ''}
-                  ${available && !isPast ? `${colorClass} font-medium cursor-pointer hover:opacity-80` : ''}
+                  ${available && !isPast ? `${colorClass} font-medium cursor-pointer hover:opacity-80 hover:scale-105` : ''}
                   ${!available && !isPast ? 'text-muted-foreground/60' : ''}
-                  ${selected ? 'bg-primary text-primary-foreground font-medium hover:bg-primary/90' : ''}
+                  ${selected ? 'bg-primary text-primary-foreground font-medium hover:bg-primary/90 ring-2 ring-primary/30' : ''}
                 `}
               >
                 {format(day, 'd')}
@@ -235,9 +236,9 @@ export default function PublicProfileClient({
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b">
+      <header className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
-          <Link href="/" className="font-bold text-lg">amigos.place</Link>
+          <Link href="/" className="font-bold text-lg text-gradient-warm">amigos.place</Link>
           {currentUser ? (
             <Link href="/dashboard">
               <Button variant="ghost" size="sm">Dashboard</Button>
@@ -265,13 +266,13 @@ export default function PublicProfileClient({
                   onClick={() => setPhotoIndex((i) => (i > 0 ? i - 1 : photos.length - 1))}
                   className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center"
                 >
-                  &larr;
+                  <ChevronLeft className="w-5 h-5" />
                 </button>
                 <button
                   onClick={() => setPhotoIndex((i) => (i < photos.length - 1 ? i + 1 : 0))}
                   className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center"
                 >
-                  &rarr;
+                  <ChevronRight className="w-5 h-5" />
                 </button>
                 <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
                   {photos.map((_, i) => (
@@ -298,16 +299,17 @@ export default function PublicProfileClient({
             <img
               src={profile.avatar_url}
               alt={profile.display_name}
-              className="w-16 h-16 rounded-full object-cover shrink-0"
+              className="w-20 h-20 rounded-full object-cover shrink-0 ring-4 ring-primary/10"
             />
           ) : (
-            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center text-xl font-medium shrink-0">
+            <div className="w-20 h-20 rounded-full bg-primary/10 text-primary flex items-center justify-center text-2xl font-medium shrink-0 ring-4 ring-primary/10">
               {profile.display_name.charAt(0).toUpperCase()}
             </div>
           )}
           <div className="space-y-1">
             <h1 className="text-3xl font-bold">{profile.display_name}</h1>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground flex items-center gap-1">
+              <MapPin className="w-4 h-4" />
               {profile.city}, {profile.country}
             </p>
             <Badge variant="secondary">{accommodationLabels[profile.accommodation_type]}</Badge>
@@ -333,14 +335,14 @@ export default function PublicProfileClient({
                 size="sm"
                 onClick={() => setCurrentMonth(addMonths(currentMonth, -1))}
               >
-                &larr; Prev
+                <ChevronLeft className="w-4 h-4" />
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
               >
-                Next &rarr;
+                <ChevronRight className="w-4 h-4" />
               </Button>
             </div>
 
@@ -393,7 +395,7 @@ export default function PublicProfileClient({
               }}>
                 <DialogTrigger asChild>
                   <Button
-                    className="w-full h-12 text-base"
+                    className="w-full h-12 text-base rounded-full shadow-lg shadow-primary/25"
                     disabled={!selectedStart || !selectedEnd}
                   >
                     {selectedStart && selectedEnd
@@ -447,7 +449,7 @@ export default function PublicProfileClient({
               </Dialog>
             ) : (
               <Link href={`/auth/login`}>
-                <Button className="w-full h-12 text-base">
+                <Button className="w-full h-12 text-base rounded-full shadow-lg shadow-primary/25">
                   Sign in to request a stay
                 </Button>
               </Link>
