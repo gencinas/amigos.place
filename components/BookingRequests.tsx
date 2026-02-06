@@ -22,7 +22,7 @@ interface BookingWithGuest {
   status: BookingStatus
   message: string
   created_at: string
-  guest: { display_name: string; city: string; country: string; username: string }
+  guest: { display_name: string; city: string; country: string; username: string; avatar_url: string | null }
   [key: string]: unknown
 }
 
@@ -52,11 +52,20 @@ export function BookingRequests({ bookings: initial }: { bookings: Array<Record<
       {bookings.map((b) => (
         <div key={b.id} className="border rounded-lg p-4 space-y-2">
           <div className="flex items-start justify-between">
-            <div>
-              <p className="font-medium">{b.guest.display_name}</p>
-              <p className="text-xs text-muted-foreground">
-                {b.guest.city}, {b.guest.country}
-              </p>
+            <div className="flex items-center gap-2">
+              {b.guest.avatar_url ? (
+                <img src={b.guest.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-medium">
+                  {b.guest.display_name.charAt(0).toUpperCase()}
+                </div>
+              )}
+              <div>
+                <p className="font-medium">{b.guest.display_name}</p>
+                <p className="text-xs text-muted-foreground">
+                  {b.guest.city}, {b.guest.country}
+                </p>
+              </div>
             </div>
             <Badge className={statusColors[b.status]}>{b.status}</Badge>
           </div>

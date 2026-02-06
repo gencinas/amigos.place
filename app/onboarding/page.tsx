@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -11,6 +11,10 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Separator } from '@/components/ui/separator'
+import { AvatarUpload } from '@/components/AvatarUpload'
+import { AccommodationPhotosUpload } from '@/components/AccommodationPhotosUpload'
+import type { AccommodationPhoto } from '@/types/database'
 
 const COUNTRIES = [
   'Argentina', 'Austria', 'Belgium', 'Brazil', 'Chile', 'Colombia',
@@ -40,6 +44,16 @@ export default function OnboardingPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [checkingUsername, setCheckingUsername] = useState(false)
+  const [userId, setUserId] = useState<string | null>(null)
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  const [photos, setPhotos] = useState<AccommodationPhoto[]>([])
+  const [profileCreated, setProfileCreated] = useState(false)
+
+  useEffect(() => {
+    createClient().auth.getUser().then(({ data: { user } }) => {
+      if (user) setUserId(user.id)
+    })
+  }, [])
 
   const {
     register,
@@ -90,6 +104,7 @@ export default function OnboardingPage() {
       country: data.country,
       accommodation_type: data.accommodation_type,
       bio: data.bio || null,
+      avatar_url: avatarUrl,
     })
 
     if (insertError) {
@@ -102,7 +117,46 @@ export default function OnboardingPage() {
       return
     }
 
-    router.push('/dashboard')
+    setProfileCreated(true)
+    setLoading(false)
+  }
+
+  // Step 2: photos (after profile is created)
+  if (profileCreated && userId) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4 py-8">
+        <Card className="w-full max-w-lg">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl font-bold">Add photos of your space</CardTitle>
+            <CardDescription>
+              Help your friends know what to expect. You can skip this and add later.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <AccommodationPhotosUpload
+              userId={userId}
+              photos={photos}
+              onUpdate={setPhotos}
+            />
+            <div className="flex gap-3">
+              <Button
+                variant="ghost"
+                className="flex-1"
+                onClick={() => router.push('/dashboard')}
+              >
+                Skip for now
+              </Button>
+              <Button
+                className="flex-1"
+                onClick={() => router.push('/dashboard')}
+              >
+                Continue
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   return (
@@ -120,6 +174,21 @@ export default function OnboardingPage() {
               <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md">
                 {error}
               </div>
+            )}
+
+            {/* Avatar */}
+            {userId && (
+              <>
+                <div className="space-y-2">
+                  <Label>Profile photo</Label>
+                  <AvatarUpload
+                    userId={userId}
+                    currentUrl={avatarUrl}
+                    onUploaded={setAvatarUrl}
+                  />
+                </div>
+                <Separator />
+              </>
             )}
 
             <div className="space-y-2">
@@ -224,7 +293,7 @@ export default function OnboardingPage() {
             </div>
 
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Creating profile...' : 'Create my profile'}
+              {loading ? 'Creating profile...' : 'Continue'}
             </Button>
           </form>
         </CardContent>

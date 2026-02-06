@@ -30,6 +30,12 @@ export default async function PublicProfilePage({ params }: Props) {
     .gte('end_date', new Date().toISOString().split('T')[0])
     .order('start_date', { ascending: true })
 
+  const { data: photos } = await supabase
+    .from('accommodation_photos')
+    .select('*')
+    .eq('user_id', profile.id)
+    .order('display_order', { ascending: true })
+
   // Check if current user is logged in
   const { data: { user } } = await supabase.auth.getUser()
   let currentProfile = null
@@ -48,6 +54,7 @@ export default async function PublicProfilePage({ params }: Props) {
     <PublicProfileClient
       profile={profile}
       availabilities={availabilities ?? []}
+      photos={photos ?? []}
       currentUser={currentProfile}
       isOwnProfile={isOwnProfile}
     />

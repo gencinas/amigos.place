@@ -6,26 +6,39 @@ import { Header } from '@/components/Header'
 import { AvailabilityCalendar } from '@/components/AvailabilityCalendar'
 import { BookingRequests } from '@/components/BookingRequests'
 import { MyTrips } from '@/components/MyTrips'
+import { AvatarUpload } from '@/components/AvatarUpload'
+import { AccommodationPhotosUpload } from '@/components/AccommodationPhotosUpload'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import type { Profile, Availability } from '@/types/database'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
+import type { Profile, Availability, AccommodationPhoto } from '@/types/database'
 
 interface DashboardClientProps {
   profile: Profile
   availabilities: Availability[]
   hostBookings: Array<Record<string, unknown>>
   guestBookings: Array<Record<string, unknown>>
+  photos: AccommodationPhoto[]
 }
 
 export default function DashboardClient({
-  profile,
+  profile: initialProfile,
   availabilities: initialAvailabilities,
   hostBookings,
   guestBookings,
+  photos: initialPhotos,
 }: DashboardClientProps) {
+  const [profile, setProfile] = useState(initialProfile)
   const [availabilities, setAvailabilities] = useState(initialAvailabilities)
+  const [photos, setPhotos] = useState(initialPhotos)
   const publicUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/${profile.username}`
   const pendingHostBookings = hostBookings.filter((b) => b.status === 'pending')
 
@@ -90,6 +103,68 @@ export default function DashboardClient({
         </div>
 
         <Separator />
+
+        {/* Photos section */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                Your Photos
+                <Badge variant="secondary">{photos.length}</Badge>
+              </CardTitle>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm">Edit photos</Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-lg">
+                  <DialogHeader>
+                    <DialogTitle>Edit your photos</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-6">
+                    <div>
+                      <p className="text-sm font-medium mb-3">Profile photo</p>
+                      <AvatarUpload
+                        userId={profile.id}
+                        currentUrl={profile.avatar_url}
+                        onUploaded={(url) => setProfile({ ...profile, avatar_url: url })}
+                      />
+                    </div>
+                    <Separator />
+                    <div>
+                      <p className="text-sm font-medium mb-3">Accommodation photos</p>
+                      <AccommodationPhotosUpload
+                        userId={profile.id}
+                        photos={photos}
+                        onUpdate={setPhotos}
+                      />
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </CardHeader>
+          {photos.length > 0 && (
+            <CardContent>
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                {photos.map((p) => (
+                  <img
+                    key={p.id}
+                    src={p.photo_url}
+                    alt={p.caption || 'Accommodation'}
+                    className="aspect-[4/3] object-cover rounded-md"
+                  />
+                ))}
+              </div>
+            </CardContent>
+          )}
+          {photos.length === 0 && (
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Add photos to make your profile more trustworthy for friends.
+              </p>
+            </CardContent>
+          )}
+        </Card>
 
         {/* Availability Calendar */}
         <Card>

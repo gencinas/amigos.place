@@ -35,12 +35,19 @@ export default async function DashboardPage() {
     .eq('guest_id', user.id)
     .order('created_at', { ascending: false })
 
+  const { data: photos } = await supabase
+    .from('accommodation_photos')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('display_order', { ascending: true })
+
   return (
     <DashboardClient
       profile={profile}
       availabilities={availabilities ?? []}
       hostBookings={hostBookings ?? []}
       guestBookings={guestBookings ?? []}
+      photos={photos ?? []}
     />
   )
 }

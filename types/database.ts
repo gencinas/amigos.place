@@ -1,5 +1,7 @@
 export type AccommodationType = 'room' | 'sofa' | 'other'
 export type BookingStatus = 'pending' | 'accepted' | 'declined' | 'cancelled'
+export type AccommodationStatus = 'empty' | 'host_present' | 'shared'
+export type PaymentType = 'free' | 'friend_price' | 'favor' | 'service'
 
 export interface Profile {
   id: string
@@ -9,6 +11,16 @@ export interface Profile {
   country: string
   accommodation_type: AccommodationType
   bio: string | null
+  avatar_url: string | null
+  created_at: string
+}
+
+export interface AccommodationPhoto {
+  id: string
+  user_id: string
+  photo_url: string
+  display_order: number
+  caption: string | null
   created_at: string
 }
 
@@ -18,6 +30,11 @@ export interface Availability {
   start_date: string
   end_date: string
   notes: string | null
+  accommodation_status: AccommodationStatus | null
+  payment_type: PaymentType | null
+  price_amount: number | null
+  price_currency: string
+  favor_description: string | null
   created_at: string
 }
 
@@ -55,6 +72,11 @@ export interface Database {
         Row: Booking
         Insert: Omit<Booking, 'id' | 'created_at' | 'updated_at' | 'status'> & { status?: BookingStatus }
         Update: Partial<Pick<Booking, 'status'>>
+      }
+      accommodation_photos: {
+        Row: AccommodationPhoto
+        Insert: Omit<AccommodationPhoto, 'id' | 'created_at'>
+        Update: Partial<Omit<AccommodationPhoto, 'id' | 'user_id' | 'created_at'>>
       }
     }
   }

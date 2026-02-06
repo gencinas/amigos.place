@@ -29,7 +29,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { toast } from 'sonner'
-import type { Profile, Availability } from '@/types/database'
+import type { Profile, Availability, AccommodationPhoto } from '@/types/database'
 
 const accommodationLabels = {
   room: 'Private room',
@@ -37,9 +37,44 @@ const accommodationLabels = {
   other: 'Other',
 }
 
+const statusLabels = {
+  empty: 'Empty apartment',
+  host_present: 'Host will be home',
+  shared: 'Someone else present',
+}
+
+const paymentLabels = {
+  free: 'Free',
+  friend_price: 'Friend price',
+  favor: 'Favor exchange',
+  service: 'Service needed',
+}
+
+function getAvailabilityColor(a: Availability) {
+  if (!a.payment_type || a.payment_type === 'free') return 'bg-emerald-100 text-emerald-800'
+  if (a.payment_type === 'friend_price') return 'bg-blue-100 text-blue-800'
+  return 'bg-orange-100 text-orange-800'
+}
+
+function getAvailabilitySummary(a: Availability) {
+  const parts: string[] = []
+  if (a.accommodation_status) parts.push(statusLabels[a.accommodation_status])
+  if (a.payment_type === 'free') parts.push('Free')
+  else if (a.payment_type === 'friend_price' && a.price_amount) {
+    parts.push(`${a.price_currency || '€'}${a.price_amount}/night`)
+  } else if (a.payment_type === 'favor' && a.favor_description) {
+    parts.push(`Favor: ${a.favor_description}`)
+  } else if (a.payment_type === 'service' && a.favor_description) {
+    parts.push(`Service: ${a.favor_description}`)
+  }
+  if (a.notes) parts.push(a.notes)
+  return parts.join(' — ')
+}
+
 interface Props {
   profile: Profile
   availabilities: Availability[]
+  photos: AccommodationPhoto[]
   currentUser: Profile | null
   isOwnProfile: boolean
 }
@@ -47,6 +82,7 @@ interface Props {
 export default function PublicProfileClient({
   profile,
   availabilities,
+  photos,
   currentUser,
   isOwnProfile,
 }: Props) {
@@ -57,6 +93,7 @@ export default function PublicProfileClient({
   const [dialogOpen, setDialogOpen] = useState(false)
   const [selectedStart, setSelectedStart] = useState<Date | null>(null)
   const [selectedEnd, setSelectedEnd] = useState<Date | null>(null)
+  const [photoIndex, setPhotoIndex] = useState(0)
 
   const today = new Date()
   today.setHours(0, 0, 0, 0)
@@ -79,6 +116,12 @@ export default function PublicProfileClient({
     )
   }
 
+  function getDateColor(date: Date) {
+    const avail = getAvailabilityForDate(date)
+    if (!avail) return ''
+    return getAvailabilityColor(avail)
+  }
+
   function handleDayClick(date: Date) {
     if (!isDateAvailable(date)) return
     const avail = getAvailabilityForDate(date)
@@ -89,14 +132,12 @@ export default function PublicProfileClient({
       setSelectedEnd(null)
       setSelectedAvailability(avail)
     } else {
-      // Ensure both dates are within the same availability
       const sameAvail = getAvailabilityForDate(date)
       if (sameAvail?.id === selectedAvailability?.id) {
         const [start, end] = selectedStart <= date ? [selectedStart, date] : [date, selectedStart]
         setSelectedStart(start)
         setSelectedEnd(end)
       } else {
-        // Different availability, start new selection
         setSelectedStart(date)
         setSelectedEnd(null)
         setSelectedAvailability(sameAvail || null)
@@ -108,6 +149,17 @@ export default function PublicProfileClient({
     if (!selectedStart) return false
     if (!selectedEnd) return date.getTime() === selectedStart.getTime()
     return isWithinInterval(date, { start: selectedStart, end: selectedEnd })
+  }
+
+  function getDefaultMessage() {
+    if (!selectedAvailability) return ''
+    if (selectedAvailability.payment_type === 'favor' && selectedAvailability.favor_description) {
+      return `Hi! I'd love to stay. I saw you're looking for help with: ${selectedAvailability.favor_description}. Happy to help with that!`
+    }
+    if (selectedAvailability.payment_type === 'service' && selectedAvailability.favor_description) {
+      return `Hi! I'd love to stay. I can help with: ${selectedAvailability.favor_description}.`
+    }
+    return ''
   }
 
   async function sendRequest() {
@@ -154,6 +206,7 @@ export default function PublicProfileClient({
             const isPast = isBefore(day, today)
             const available = isDateAvailable(day)
             const selected = isDateSelected(day)
+            const colorClass = available && !isPast ? getDateColor(day) : ''
 
             return (
               <button
@@ -164,7 +217,7 @@ export default function PublicProfileClient({
                   h-9 text-xs rounded-md transition-colors
                   ${!inMonth ? 'invisible' : ''}
                   ${isPast ? 'text-muted-foreground/40' : ''}
-                  ${available && !isPast ? 'bg-emerald-100 text-emerald-800 font-medium cursor-pointer hover:bg-emerald-200' : ''}
+                  ${available && !isPast ? `${colorClass} font-medium cursor-pointer hover:opacity-80` : ''}
                   ${!available && !isPast ? 'text-muted-foreground/60' : ''}
                   ${selected ? 'bg-primary text-primary-foreground font-medium hover:bg-primary/90' : ''}
                 `}
@@ -198,14 +251,68 @@ export default function PublicProfileClient({
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-8 space-y-6">
+        {/* Photo carousel */}
+        {photos.length > 0 && (
+          <div className="relative rounded-xl overflow-hidden">
+            <img
+              src={photos[photoIndex].photo_url}
+              alt={photos[photoIndex].caption || 'Accommodation'}
+              className="w-full aspect-[16/9] object-cover"
+            />
+            {photos.length > 1 && (
+              <>
+                <button
+                  onClick={() => setPhotoIndex((i) => (i > 0 ? i - 1 : photos.length - 1))}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center"
+                >
+                  &larr;
+                </button>
+                <button
+                  onClick={() => setPhotoIndex((i) => (i < photos.length - 1 ? i + 1 : 0))}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center"
+                >
+                  &rarr;
+                </button>
+                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+                  {photos.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setPhotoIndex(i)}
+                      className={`w-2 h-2 rounded-full ${i === photoIndex ? 'bg-white' : 'bg-white/50'}`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+            {photos[photoIndex].caption && (
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 pt-8">
+                <p className="text-white text-sm">{photos[photoIndex].caption}</p>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Profile info */}
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold">{profile.display_name}</h1>
-          <p className="text-muted-foreground">
-            {profile.city}, {profile.country}
-          </p>
-          <Badge variant="secondary">{accommodationLabels[profile.accommodation_type]}</Badge>
-          {profile.bio && <p className="text-sm mt-2">{profile.bio}</p>}
+        <div className="flex items-start gap-4">
+          {profile.avatar_url ? (
+            <img
+              src={profile.avatar_url}
+              alt={profile.display_name}
+              className="w-16 h-16 rounded-full object-cover shrink-0"
+            />
+          ) : (
+            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center text-xl font-medium shrink-0">
+              {profile.display_name.charAt(0).toUpperCase()}
+            </div>
+          )}
+          <div className="space-y-1">
+            <h1 className="text-3xl font-bold">{profile.display_name}</h1>
+            <p className="text-muted-foreground">
+              {profile.city}, {profile.country}
+            </p>
+            <Badge variant="secondary">{accommodationLabels[profile.accommodation_type]}</Badge>
+            {profile.bio && <p className="text-sm mt-2">{profile.bio}</p>}
+          </div>
         </div>
 
         {isOwnProfile && (
@@ -237,6 +344,13 @@ export default function PublicProfileClient({
               </Button>
             </div>
 
+            {/* Color legend */}
+            <div className="flex flex-wrap gap-3 mb-4 text-xs">
+              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-emerald-100 border border-emerald-200" /> Free</span>
+              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-blue-100 border border-blue-200" /> Friend price</span>
+              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-orange-100 border border-orange-200" /> Favor/Service</span>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {months.map(renderMonth)}
             </div>
@@ -245,16 +359,19 @@ export default function PublicProfileClient({
             {availabilities.length > 0 && (
               <div className="mt-6 space-y-2">
                 <h4 className="text-sm font-medium">Available periods:</h4>
-                {availabilities.map((a) => (
-                  <div key={a.id} className="text-sm border rounded-md px-3 py-2">
-                    <span className="font-medium">
-                      {format(parseISO(a.start_date), 'MMM d')} → {format(parseISO(a.end_date), 'MMM d, yyyy')}
-                    </span>
-                    {a.notes && (
-                      <span className="text-muted-foreground ml-2">— {a.notes}</span>
-                    )}
-                  </div>
-                ))}
+                {availabilities.map((a) => {
+                  const summary = getAvailabilitySummary(a)
+                  return (
+                    <div key={a.id} className={`text-sm border rounded-md px-3 py-2 ${getAvailabilityColor(a)}`}>
+                      <span className="font-medium">
+                        {format(parseISO(a.start_date), 'MMM d')} &rarr; {format(parseISO(a.end_date), 'MMM d, yyyy')}
+                      </span>
+                      {summary && (
+                        <p className="mt-0.5 opacity-80">{summary}</p>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
             )}
 
@@ -270,7 +387,10 @@ export default function PublicProfileClient({
         {!isOwnProfile && (
           <div className="sticky bottom-4">
             {currentUser ? (
-              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+              <Dialog open={dialogOpen} onOpenChange={(open) => {
+                setDialogOpen(open)
+                if (open && !message) setMessage(getDefaultMessage())
+              }}>
                 <DialogTrigger asChild>
                   <Button
                     className="w-full h-12 text-base"
@@ -287,12 +407,27 @@ export default function PublicProfileClient({
                     <DialogDescription>
                       {selectedStart && selectedEnd && (
                         <>
-                          {format(selectedStart, 'MMM d, yyyy')} → {format(selectedEnd, 'MMM d, yyyy')}
+                          {format(selectedStart, 'MMM d, yyyy')} &rarr; {format(selectedEnd, 'MMM d, yyyy')}
                           {' '}in {profile.city}
                         </>
                       )}
                     </DialogDescription>
                   </DialogHeader>
+                  {selectedAvailability && (selectedAvailability.accommodation_status || selectedAvailability.payment_type) && (
+                    <div className="text-sm space-y-1 bg-muted/50 rounded-md p-3">
+                      {selectedAvailability.accommodation_status && (
+                        <p>{statusLabels[selectedAvailability.accommodation_status]}</p>
+                      )}
+                      {selectedAvailability.payment_type && (
+                        <p className="font-medium">
+                          {selectedAvailability.payment_type === 'free' && 'Free stay'}
+                          {selectedAvailability.payment_type === 'friend_price' && `${selectedAvailability.price_currency || '€'}${selectedAvailability.price_amount}/night`}
+                          {selectedAvailability.payment_type === 'favor' && `Favor: ${selectedAvailability.favor_description}`}
+                          {selectedAvailability.payment_type === 'service' && `Service: ${selectedAvailability.favor_description}`}
+                        </p>
+                      )}
+                    </div>
+                  )}
                   <div className="space-y-4">
                     <Textarea
                       placeholder="Write a message to your host (introduce yourself, what brings you to the city, etc.)"

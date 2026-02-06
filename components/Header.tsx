@@ -24,9 +24,22 @@ export function Header({ profile, pendingCount }: { profile: Profile; pendingCou
         </Link>
         <div className="flex items-center gap-3">
           <NotificationBell count={pendingCount} />
-          <span className="text-sm text-muted-foreground hidden sm:block">
-            {profile.display_name}
-          </span>
+          <div className="flex items-center gap-2">
+            {profile.avatar_url ? (
+              <img
+                src={profile.avatar_url}
+                alt={profile.display_name}
+                className="w-7 h-7 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center text-xs font-medium">
+                {profile.display_name.charAt(0).toUpperCase()}
+              </div>
+            )}
+            <span className="text-sm text-muted-foreground hidden sm:block">
+              {profile.display_name}
+            </span>
+          </div>
           <Button variant="ghost" size="sm" onClick={handleSignOut}>
             Sign out
           </Button>
