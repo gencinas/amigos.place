@@ -1,7 +1,25 @@
-export type AccommodationType = 'room' | 'sofa' | 'other'
+/*
+  SQL migration for new fields:
+
+  ALTER TABLE profiles
+    ADD COLUMN IF NOT EXISTS intent text CHECK (intent IN ('host', 'guest', 'both')),
+    ADD COLUMN IF NOT EXISTS default_payment_type text CHECK (default_payment_type IN ('free', 'friend_price', 'favor', 'service')),
+    ADD COLUMN IF NOT EXISTS default_price numeric,
+    ADD COLUMN IF NOT EXISTS default_favor_text text,
+    ADD COLUMN IF NOT EXISTS default_presence text CHECK (default_presence IN ('home', 'empty', 'shared')),
+    ADD COLUMN IF NOT EXISTS onboarding_step integer DEFAULT 0;
+
+  ALTER TABLE profiles DROP CONSTRAINT IF EXISTS profiles_accommodation_type_check;
+  ALTER TABLE profiles ADD CONSTRAINT profiles_accommodation_type_check
+    CHECK (accommodation_type IN ('room', 'sofa', 'airbed', 'other'));
+*/
+
+export type AccommodationType = 'room' | 'sofa' | 'airbed' | 'other'
 export type BookingStatus = 'pending' | 'accepted' | 'declined' | 'cancelled'
 export type AccommodationStatus = 'empty' | 'host_present' | 'shared'
 export type PaymentType = 'free' | 'friend_price' | 'favor' | 'service'
+export type Intent = 'host' | 'guest' | 'both'
+export type Presence = 'home' | 'empty' | 'shared'
 
 export interface Profile {
   id: string
@@ -12,6 +30,12 @@ export interface Profile {
   accommodation_type: AccommodationType
   bio: string | null
   avatar_url: string | null
+  intent: Intent | null
+  default_payment_type: PaymentType | null
+  default_price: number | null
+  default_favor_text: string | null
+  default_presence: Presence | null
+  onboarding_step: number | null
   created_at: string
 }
 

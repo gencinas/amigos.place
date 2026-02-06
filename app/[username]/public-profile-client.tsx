@@ -32,9 +32,10 @@ import { ChevronLeft, ChevronRight, MapPin } from 'lucide-react'
 import { toast } from 'sonner'
 import type { Profile, Availability, AccommodationPhoto } from '@/types/database'
 
-const accommodationLabels = {
+const accommodationLabels: Record<string, string> = {
   room: 'Private room',
   sofa: 'Sofa',
+  airbed: 'Air bed',
   other: 'Other',
 }
 
@@ -448,9 +449,9 @@ export default function PublicProfileClient({
                 </DialogContent>
               </Dialog>
             ) : (
-              <Link href={`/auth/login`}>
+              <Link href={`/onboarding?from=${profile.username}`}>
                 <Button className="w-full h-12 text-base rounded-full shadow-lg shadow-primary/25">
-                  Sign in to request a stay
+                  Sign up to request a stay
                 </Button>
               </Link>
             )}

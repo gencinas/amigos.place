@@ -34,7 +34,7 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   // Protected routes - redirect to login if not authenticated
-  const protectedPaths = ['/dashboard', '/onboarding']
+  const protectedPaths = ['/dashboard']
   const isProtected = protectedPaths.some((path) =>
     request.nextUrl.pathname.startsWith(path)
   )
@@ -45,13 +45,15 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // Redirect logged-in users away from auth pages
-  const authPaths = ['/auth/login', '/auth/signup']
-  const isAuthPage = authPaths.some((path) =>
-    request.nextUrl.pathname.startsWith(path)
-  )
+  // Redirect /auth/signup to /onboarding (signup is now part of the wizard)
+  if (request.nextUrl.pathname.startsWith('/auth/signup')) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/onboarding'
+    return NextResponse.redirect(url)
+  }
 
-  if (isAuthPage && user) {
+  // Redirect logged-in users away from login page
+  if (request.nextUrl.pathname.startsWith('/auth/login') && user) {
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'
     return NextResponse.redirect(url)

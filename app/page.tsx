@@ -13,7 +13,7 @@ export default function HomePage() {
             <Link href="/auth/login">
               <Button variant="ghost" size="sm">Sign in</Button>
             </Link>
-            <Link href="/auth/signup">
+            <Link href="/onboarding">
               <Button size="sm" className="rounded-full shadow-lg shadow-primary/25 hover:-translate-y-0.5">Get started</Button>
             </Link>
           </div>
@@ -30,7 +30,7 @@ export default function HomePage() {
             Share your home availability with friends. No fees, no strangers
             — just your people, your couch, your city.
           </p>
-          <Link href="/auth/signup">
+          <Link href="/onboarding">
             <Button size="lg" className="h-12 px-8 text-base rounded-full shadow-lg shadow-primary/25 hover:-translate-y-0.5">
               Create your free profile
             </Button>
@@ -80,7 +80,7 @@ export default function HomePage() {
           <p className="text-muted-foreground">
             It takes 2 minutes to set up. Share it in the group chat.
           </p>
-          <Link href="/auth/signup">
+          <Link href="/onboarding">
             <Button size="lg" className="h-12 px-8 text-base rounded-full shadow-lg shadow-primary/25 hover:-translate-y-0.5">
               Get started
             </Button>
